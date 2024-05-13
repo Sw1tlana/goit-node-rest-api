@@ -47,21 +47,24 @@ export const createContact = (req, res) => {
 };
 
 export const updateContact = (req, res) => {
-    const { id } = req.params;
-    const { name, email, phone } = req.body;
+  const { id } = req.params;
 
-    if (!name && !email && !phone) {
-        return res.status(400).json({ message: "Body must have at least one field" });
-    }
+  const { name, email, phone } = req.body;
 
-    contactsServices
-        .updateContact(id, name, email, phone)
-        .then((contact) => {
-            if (contact !== null) {
-                res.status(200).json(contact);
-            } else {
-                res.status(404).json({ message: "Not found" });
-            }
-        })
-        .catch(() => res.status(500).json({ message: "Failed to update contact" }));
+  if (name === undefined && email === undefined && phone === undefined) {
+    return res
+      .status(400)
+      .json({ message: "Body must have at least one field" });
+  }
+
+  contactsServices
+    .updateContact(id, name, email, phone)
+    .then((contact) => {
+      if (contact !== null) {
+        res.status(200).json(contact);
+      } else {
+        res.status(404).json({ message: "Not found" });
+      }
+    })
+    .catch(() => res.status(404).json({ message: "Not found" }));
 };
