@@ -1,0 +1,1 @@
+DB_URI="mongodb+srv://sv1tlana:newpassword123@cluster0.2avqltf.mongodb.net/db-contacts?retryWrites=true&w=majority&appName=Cluster0";
