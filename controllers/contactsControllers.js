@@ -68,3 +68,19 @@ export const updateContact = (req, res) => {
     })
     .catch(() => res.status(404).json({ message: "Not found" }));
 };
+
+export const updateContactFavorite = (req, res) => {
+    const { id } = req.params;
+    
+    const { favorite } = req.body;
+    
+  contactsServices
+    .updateContactFavorite(id, favorite)
+    .then((contact) => {
+      if (contact === null) {
+        return res.status(404).json({ message: "Not found" });
+      }
+      res.status(200).json(contact);
+    })
+    .catch((err) => res.status(500).json("Internal Server Error"));
+};
