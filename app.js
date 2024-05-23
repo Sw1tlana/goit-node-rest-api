@@ -4,6 +4,7 @@ import morgan from "morgan";
 import cors from "cors";
 
 import contactsRouter from "./routes/contactsRouter.js";
+import userRoutes from "./routes/usersRouter.js";
 
 import "./db.js";
 
@@ -14,6 +15,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/contacts", contactsRouter);
+app.use("/api/users", userRoutes);
 
 app.use((_, res) => {
   res.status(404).json({ message: "Route not found" });
