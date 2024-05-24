@@ -9,8 +9,8 @@ export const register = async(req, res, next) => {
             subscription,
         });
 
-        if (result !== null) {
-            return res.status(409).send("Email in use");
+        if (result === null) {
+            return res.status(409).send({ message: "Email in use" });
         }
            return res.status(201).send({
             user: {
@@ -23,7 +23,7 @@ export const register = async(req, res, next) => {
     }
 }
 
-export const login = async(req, res, next) => {
+export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
         const result = await usersService.loginUser({ email, password });
@@ -33,16 +33,20 @@ export const login = async(req, res, next) => {
             return res.status(401).send({ message: "Email or password is wrong" });
         }
 
-           return res.status(200).send({
+        return res.status(200).send({
             token: result.token,
             user: {
-            email: result.user.email,
-            subscription: result.user.subscription,
-      },
-    });
+                email: result.user.email,
+                subscription: result.user.subscription,
+            },
+        });
     } catch (error) {
         next(error);
     }
-}
+};
 
-export default { register, login };
+export const logout = (req, res) => {
+    res.status(200).send({ message: "Logout" });
+};
+
+export default { register, login, logout };
