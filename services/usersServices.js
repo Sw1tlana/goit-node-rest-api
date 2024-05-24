@@ -1,5 +1,6 @@
 import User from "../models/users.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const registerUser = async (information) => {
     try {
@@ -35,12 +36,20 @@ const loginUser = async (email, password) => {
             return null;
         }
 
-        return { token: "token", user };
+        const token = jwt.sign({
+            id: user._id, email: user.email, subscription: user.subscription
+        }, process.env.JWT_SECRET,
+        { expiresIn: 60 * 60 }
+        );
+
+        await User.findByIdAndUpdate(user._id, { token });
+
+        return { token, user };
     } catch (error) {}
 }
 
 const logoutUser = async (information) => {
-    return
+  await User.findByIdAndUpdate(id, { token: null });
 }
 
 export default {

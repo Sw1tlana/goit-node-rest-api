@@ -28,7 +28,7 @@ export const login = async (req, res, next) => {
         const { email, password } = req.body;
         const result = await usersService.loginUser({ email, password });
 
-        if (user === null) {
+        if (result === null) {
             console.log("Email");
             return res.status(401).send({ message: "Email or password is wrong" });
         }
