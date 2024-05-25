@@ -26,7 +26,7 @@ export const register = async(req, res, next) => {
 export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const result = await usersService.loginUser({ email, password });
+        const result = await usersService.loginUser({ email, password } );
 
         if (result === null) {
             console.log("Email");
@@ -48,5 +48,6 @@ export const login = async (req, res, next) => {
 export const logout = (req, res) => {
     res.status(200).send({ message: "Logout" });
 };
+
 
 export default { register, login, logout };

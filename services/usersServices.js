@@ -19,7 +19,10 @@ const registerUser = async (information) => {
             subscription,
         });
         return newUser;
-    } catch (error) {}
+    } catch (error) {
+        console.error(error);
+        throw new Error('Error registering user');
+    }
     
 }
 
@@ -32,24 +35,27 @@ const loginUser = async (email, password) => {
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
+        if (isMatch === false) {
             return null;
         }
 
-        const token = jwt.sign({
-            id: user._id, email: user.email, subscription: user.subscription
-        }, process.env.JWT_SECRET,
-        { expiresIn: 60 * 60 }
+        const token = jwt.sign(
+            { id: user._id, email: user.email, subscription: user.subscription },
+            process.env.JWT_SECRET,
+            {
+                expiresIn: "1h",
+            }
         );
 
         await User.findByIdAndUpdate(user._id, { token });
 
         return { token, user };
-    } catch (error) {}
+    } catch (error) {
+    }
 }
 
-const logoutUser = async (information) => {
-  await User.findByIdAndUpdate(id, { token: null });
+const logoutUser = async (id) => {
+    await User.findByIdAndUpdate(id, { token: null });  
 }
 
 export default {
