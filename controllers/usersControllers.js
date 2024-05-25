@@ -2,14 +2,19 @@ import usersService from "../services/usersServices.js";
 
 export const register = async(req, res, next) => {
     try {
-        const { password, email, subscription = "starter" } = req.body;
+      const { password, email, subscription = "starter" } = req.body;
+      
+           console.log("Login attempt for email:", email);
         const result = await usersService.registerUser({ 
             password,
             email,
             subscription,
         });
+      
+        console.log("Login result:", result);
 
-        if (result === null) {
+      if (result === null) {
+            console.log("Email or password is wrong");
             return res.status(409).send({ message: "Email in use" });
         }
            return res.status(201).send({
@@ -26,7 +31,7 @@ export const register = async(req, res, next) => {
 export const login = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const result = await usersService.loginUser({ email, password } );
+        const result = await usersService.loginUser(email, password);
 
         if (result === null) {
             console.log("Email");
@@ -45,9 +50,39 @@ export const login = async (req, res, next) => {
     }
 };
 
-export const logout = (req, res) => {
-    res.status(200).send({ message: "Logout" });
+export const logout = async (req, res) => {
+   try {
+    await usersService.logoutUser(req.user.id);
+
+    return res.status(204).end();
+  } catch (error) {
+    next(error);
+  }
 };
 
+export const current = async (req, res, next) => {
+  try {
+    const authorizationHeader = req.headers.authorization;
 
-export default { register, login, logout };
+    const result = usersService.currentUser(authorizationHeader);
+
+    return res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateSubscription = async (req, res, next) => {
+  try {
+    const subscription = req.body.subscription;
+    const id = req.user.id;
+
+    const result = await usersService.updateSubscriptionUser(id, subscription);
+
+    return res.status(200).send(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default { register, login, logout, current, updateSubscription };

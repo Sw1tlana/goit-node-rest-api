@@ -28,13 +28,16 @@ const registerUser = async (information) => {
 
 const loginUser = async (email, password) => {
     try {
-        const user = await User.findOne({ email });
+      const user = await User.findOne({ email });
+        console.log('User found:', user);
 
         if (user === null) {
             return null;
         }
 
-        const isMatch = await bcrypt.compare(password, user.password);
+      const isMatch = await bcrypt.compare(password, user.password);
+      console.log('Password match:', isMatch);
+      
         if (isMatch === false) {
             return null;
         }
@@ -47,10 +50,13 @@ const loginUser = async (email, password) => {
             }
         );
 
+console.log('Generated JWT token:', token); 
         await User.findByIdAndUpdate(user._id, { token });
 
         return { token, user };
     } catch (error) {
+        console.error("Error in loginUser service:", error);
+        throw new Error('Error logging in user');
     }
 }
 
@@ -58,8 +64,30 @@ const logoutUser = async (id) => {
     await User.findByIdAndUpdate(id, { token: null });  
 }
 
+const currentUser = (authorizationHeader) => {
+  const token = authorizationHeader.split(" ")[1];
+
+  const { subscription, email } = jwt.decode(token);
+  return { email, subscription };
+};
+
+const updateSubscriptionUser = async (id, subscription) => {
+  try {
+    const data = await User.findByIdAndUpdate(
+      id,
+      { subscription },
+      {
+        new: true,
+      }
+    );
+    return data;
+  } catch (error) {}
+};
+
 export default {
-    registerUser,
-    loginUser,
-    logoutUser,
-}
+  registerUser,
+  loginUser,
+  logoutUser,
+  currentUser,
+  updateSubscriptionUser,
+};
