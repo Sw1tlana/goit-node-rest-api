@@ -1,55 +1,91 @@
 import contactsServices from "../services/contactsServices.js";
+import { isValidObjectId } from "mongoose";
 
-export const getAllContacts = (req, res) => {
+// getAllContacts
+export const getAllContacts = (req, res, next) => {
+  let { page = 1, limit = 20, favorite } = req.query;
+  
+  page = parseInt(page, 10);
+  limit = parseInt(limit, 10);
+  const filter = {
+    owner: req.user.id,
+  };
+
+  if (favorite === "true") {
+    filter.favorite = true;
+  } else if (favorite === "false") {
+    filter.favorite = false;
+  }
+
+  if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
+    return res.status(400).json({ message: "Bad request." });
+  }
     contactsServices
-        .listContacts()
-        .then((contacts) => res.status(200).json(contacts))
-        .catch((error) => res.status(500).json({ error: error.message }));
+        .listContacts(filter, page, limit)
+        .then((data) => {
+      res.status(200).json(data);
+    })
+    .catch((err) => next(err));
 };
 
-export const getOneContact = (req, res) => {
+// getOneContact
+export const getOneContact = (req, res, next) => {
+  const { id } = req.params;
+  
+if (!isValidObjectId(id)) {
+    return res.status(404).json({ message: "This identifier is not valid" });
+  }
+    contactsServices
+        .getContactById(id, req.user.id)
+         .then((contact) => {
+      if (contact === null) {
+        return res.status(404).json({ message: "Contact not found" });
+      }
+      res.status(200).json(contact);
+    })
+    .catch((err) => next(err));
+};
+
+// deleteContact
+export const deleteContact = (req, res, next) => {
     const { id } = req.params;
 
-    contactsServices
-        .getContactById(id)
-        .then((contact) => {
-            if (contact !== null) {
-                res.status(200).json(contact);
-            } else {
-                res.status(404).json({ message: "Not found" });
-            }
-        })
-        .catch(() => res.status(404).json({ message: "Not found" }));
+     if (!isValidObjectId(id)) {
+    return res.status(404).json({ message: "This identifier is not valid" });
+  }
+  contactsServices
+    .removeContact(id, req.user.id)
+    .then((contact) => {
+      if (contact == null) {
+        return res.status(404).json({ message: "Not found" });
+      }
+      res.status(200).json(contact);
+    })
+    .catch((err) => next(err));
 };
 
-export const deleteContact = (req, res) => {
-    const { id } = req.params;
-
-    contactsServices
-        .removeContact(id)
-        .then((contact) => {
-            if (contact !== null) {
-                res.status(200).json(contact);
-            } else {
-                res.status(404).json({ message: "Not found" });
-            }
-        })
-        .catch(() => res.status(500).json({ message: "Failed to delete contact" }));
+// createContact
+export const createContact = (req, res, next) => {
+  const { name, email, phone, favorite = false } = req.body;
+  
+  const isFavorite = favorite === "true" || favorite === true;
+  
+  contactsServices
+    .addContact(req.user.id, name, email, phone, isFavorite)
+    .then((contact) => {
+      res.status(201).json(contact);
+    })
+    .catch((err) => next(err));
 };
 
-export const createContact = (req, res) => {
-    const { name, email, phone } = req.body;
-
-    contactsServices
-        .addContact(name, email, phone)
-        .then((contact) => res.status(201).json(contact))
-        .catch(() => res.status(400).json({ message: "Failed to create contact" }));
-};
-
-export const updateContact = (req, res) => {
+// updateContact
+export const updateContact = (req, res, next) => {
   const { id } = req.params;
 
-  const { name, email, phone } = req.body;
+    if (!isValidObjectId(id)) {
+    return res.status(404).json({ message: "This identifier is not valid" });
+  }
+  const { name, email, phone, favortie } = req.body;
 
   if (name === undefined && email === undefined && phone === undefined) {
     return res
@@ -58,29 +94,34 @@ export const updateContact = (req, res) => {
   }
 
   contactsServices
-    .updateContact(id, name, email, phone)
+    .updateContact(id, req.user.id, favortie, name, email, phone)
     .then((contact) => {
-      if (contact !== null) {
-        res.status(200).json(contact);
-      } else {
-        res.status(404).json({ message: "Not found" });
+      if (contact == null) {
+        return res.status(404).json({ message: "Contact not found" });
       }
+      res.status(200).json(contact);
     })
-    .catch(() => res.status(404).json({ message: "Not found" }));
-};
+    .catch((err) => next(err));
 
-export const updateContactFavorite = (req, res) => {
-    const { id } = req.params;
+}
+
+// updateContactFavorite
+export const updateContactFavorite = (req, res, next) => {
+  const { id } = req.params;
+  
+   if (!isValidObjectId(id)) {
+    return res.status(404).json({ message: "This identifier is not valid" });
+  }
     
     const { favorite } = req.body;
     
   contactsServices
-    .updateContactFavorite(id, favorite)
+    .updateContact(id, req.user.id, favorite)
     .then((contact) => {
-      if (contact === null) {
+      if (contact == null) {
         return res.status(404).json({ message: "Not found" });
       }
       res.status(200).json(contact);
     })
-    .catch((err) => res.status(500).json("Internal Server Error"));
+    .catch((err) => next(err));
 };
