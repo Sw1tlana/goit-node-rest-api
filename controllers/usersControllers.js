@@ -3,18 +3,13 @@ import usersService from "../services/usersServices.js";
 export const register = async(req, res, next) => {
     try {
       const { password, email, subscription = "starter" } = req.body;
-      
-           console.log("Login attempt for email:", email);
         const result = await usersService.registerUser({ 
             password,
             email,
             subscription,
         });
-      
-        console.log("Login result:", result);
 
       if (result === null) {
-            console.log("Email or password is wrong");
             return res.status(409).send({ message: "Email in use" });
         }
            return res.status(201).send({
@@ -34,7 +29,6 @@ export const login = async (req, res, next) => {
         const result = await usersService.loginUser(email, password);
 
         if (result === null) {
-            console.log("Email");
             return res.status(401).send({ message: "Email or password is wrong" });
         }
 
@@ -50,7 +44,7 @@ export const login = async (req, res, next) => {
     }
 };
 
-export const logout = async (req, res) => {
+export const logout = async (req, res, next) => {
    try {
     await usersService.logoutUser(req.user.id);
 

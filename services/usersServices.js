@@ -20,7 +20,6 @@ const registerUser = async (information) => {
         });
         return newUser;
     } catch (error) {
-        console.error(error);
         throw new Error('Error registering user');
     }
     
@@ -29,14 +28,12 @@ const registerUser = async (information) => {
 const loginUser = async (email, password) => {
     try {
       const user = await User.findOne({ email });
-        console.log('User found:', user);
 
         if (user === null) {
             return null;
         }
 
       const isMatch = await bcrypt.compare(password, user.password);
-      console.log('Password match:', isMatch);
       
         if (isMatch === false) {
             return null;
@@ -48,14 +45,12 @@ const loginUser = async (email, password) => {
             {
                 expiresIn: "1h",
             }
-        );
-
-console.log('Generated JWT token:', token); 
+      );
+      
         await User.findByIdAndUpdate(user._id, { token });
 
         return { token, user };
     } catch (error) {
-        console.error("Error in loginUser service:", error);
         throw new Error('Error logging in user');
     }
 }
@@ -81,7 +76,9 @@ const updateSubscriptionUser = async (id, subscription) => {
       }
     );
     return data;
-  } catch (error) {}
+  } catch (error) {
+    throw new Error('Error updating subscription');
+  }
 };
 
 export default {

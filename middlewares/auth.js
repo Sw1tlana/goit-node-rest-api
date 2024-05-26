@@ -4,7 +4,6 @@ import User from "../models/users.js";
 
 function auth(req, res, next) {
   const authorizationHeader = req.headers.authorization;
-  console.log(authorizationHeader);
 
   if (typeof authorizationHeader !== "string") {
     return res.status(401).send({ message: "Not authorized" });

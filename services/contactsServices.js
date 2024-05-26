@@ -83,7 +83,6 @@ try {
   const result = await Contact.findByIdAndUpdate(contactId, newContact, {
     new: true,
   });
-  console.log(result)
     return result;
   } catch (error) {
    throw error;
