@@ -1,4 +1,6 @@
+import path from "node:path";
 import usersService from "../services/usersServices.js";
+import * as fs from "node:fs/promises";
 
 export const register = async(req, res, next) => {
     try {
@@ -80,7 +82,15 @@ export const updateSubscription = async (req, res, next) => {
 };
 
 export const changeAvatar = async (req, res, next) => {
+  try {
+    await fs.rename(
+      req.file.path,
+      path.resolve("public", "avatar", req.file.filname));
+
   res.send("Changes avatar");
+  } catch (error) {
+   next(error) 
+  }
 }
 
 export default {
