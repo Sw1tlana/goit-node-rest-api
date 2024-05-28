@@ -79,4 +79,15 @@ export const updateSubscription = async (req, res, next) => {
   }
 };
 
-export default { register, login, logout, current, updateSubscription };
+export const changeAvatar = async (req, res, next) => {
+  res.send("Changes avatar");
+}
+
+export default {
+  register,
+  login,
+  logout,
+  current,
+  updateSubscription,
+  changeAvatar
+};

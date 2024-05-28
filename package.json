@@ -1,5 +1,5 @@
 {
-  "name": "04-auths",
+  "name": "hw05-avatars",
   "type": "module",
   "scripts": {
     "start": "node ./app.js",
@@ -16,7 +16,8 @@
     "joi": "^17.13.1",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.3.5",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
