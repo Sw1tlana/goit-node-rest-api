@@ -1,6 +1,8 @@
 import User from "../models/users.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import * as fs from "node:fs/promises";
+import path from "node:path";
 
 const registerUser = async (information) => {
     try {
@@ -81,10 +83,24 @@ const updateSubscriptionUser = async (id, subscription) => {
   }
 };
 
+
+const changeUserAvatar = async (file) => {
+  try {
+     const newAvatarPath = path.resolve("public", "avatars", file.filename);
+    await fs.rename(file.path, newAvatarPath);
+
+    return newAvatarPath;
+
+  } catch (error) {
+    next(error)
+  }
+};
+
 export default {
   registerUser,
   loginUser,
   logoutUser,
   currentUser,
   updateSubscriptionUser,
+  changeUserAvatar,
 };

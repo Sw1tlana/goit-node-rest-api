@@ -83,11 +83,11 @@ export const updateSubscription = async (req, res, next) => {
 
 export const changeAvatar = async (req, res, next) => {
   try {
-    await fs.rename(
+    const result = await fs.rename(
       req.file.path,
-      path.resolve("public", "avatar", req.file.filname));
+      path.resolve("public", "avatars", req.file.filename));
 
-  res.send("Changes avatar");
+  return res.status(200).send("result");
   } catch (error) {
    next(error) 
   }
