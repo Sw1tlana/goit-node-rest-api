@@ -1,3 +1,4 @@
+import path from "node:path";
 import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
@@ -9,6 +10,8 @@ import userRouter from "./routes/usersRouter.js";
 import "./db.js";
 
 const app = express();
+
+app.use("/avatars", express.static(path.resolve("public/avatars")));
 
 app.use(morgan("tiny"));
 app.use(cors());

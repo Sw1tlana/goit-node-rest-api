@@ -1,6 +1,7 @@
 import path from "node:path";
 import usersService from "../services/usersServices.js";
 import * as fs from "node:fs/promises";
+import User from "../models/users.js";
 
 export const register = async(req, res, next) => {
     try {
@@ -83,13 +84,22 @@ export const updateSubscription = async (req, res, next) => {
 
 export const changeAvatar = async (req, res, next) => {
   try {
-    const result = await fs.rename(
-      req.file.path,
-      path.resolve("public", "avatars", req.file.filename));
-
-  return res.status(200).send("result");
+    const newAvatarPath = path.resolve("public", "avatars", req.file.filename);
+    await fs.rename(req.file.path, newAvatarPath);
+   
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatarURL: req.file.filename },
+      { new: true });
+    
+    if (user === null) {
+      return res.status(401).send({ message: "Not authorized" });
+    }
+    
+    return res.status(200).send(user);
   } catch (error) {
-   next(error) 
+    next(error)
+    
   }
 }
 
