@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import gravatar from "gravatar";
 
 const userSchema = new mongoose.Schema({
   password: {
@@ -22,9 +21,7 @@ const userSchema = new mongoose.Schema({
   },
   avatarURL: {
     type: String,
-    default: function() {
-    return gravatar.url(this.email, { s: '250', r: 'pg', d: 'identicon' });
-    },
+    default: null,
   },
 });
 
