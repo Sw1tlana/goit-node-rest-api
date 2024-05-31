@@ -8,15 +8,12 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const extname = path.extname(file.originalname);
-        console.log(extname);
         
         const basename = path.basename(file.originalname, extname);
-        console.log({ basename });
 
         const suffix = crypto.randomUUID();
 
         const filename = `${basename}--${suffix}${extname}`;
-        console.log(filename);
 
         cb(null, filename);
     }

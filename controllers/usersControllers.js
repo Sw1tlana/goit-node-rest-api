@@ -2,6 +2,7 @@ import path from "node:path";
 import usersService from "../services/usersServices.js";
 import * as fs from "node:fs/promises";
 import User from "../models/users.js";
+import Jimp from "jimp";
 
 export const register = async(req, res, next) => {
     try {
@@ -48,10 +49,10 @@ export const login = async (req, res, next) => {
 };
 
 export const logout = async (req, res, next) => {
-   try {
-    await usersService.logoutUser(req.user.id);
+  try {
+      await usersService.logoutUser(req.user.id);
 
-    return res.status(204).end();
+      return res.status(204).end();
   } catch (error) {
     next(error);
   }
@@ -84,8 +85,25 @@ export const updateSubscription = async (req, res, next) => {
 
 export const changeAvatar = async (req, res, next) => {
   try {
-    const newAvatarPath = path.resolve("public", "avatars", req.file.filename);
-    await fs.rename(req.file.path, newAvatarPath);
+   const inputPath = req.file.path;
+    const outputPath = path.resolve("public", "avatars", req.file.filename);
+
+       const image = await Jimp.read(inputPath);
+
+    // Перевірка початкових розмірів зображення
+    const originalWidth = image.bitmap.width;
+    const originalHeight = image.bitmap.height;
+
+    await image
+      .resize(250, 250) // Зміна розміру до 250x250
+      .writeAsync(outputPath); // Збереження обробленого зображення
+
+    // Перевірка нових розмірів зображення
+    const resizedImage = await Jimp.read(outputPath);
+    const resizedWidth = resizedImage.bitmap.width;
+    const resizedHeight = resizedImage.bitmap.height;
+
+    await fs.unlink(inputPath);
    
     const user = await User.findByIdAndUpdate(
       req.user.id,
