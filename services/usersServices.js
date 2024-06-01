@@ -1,6 +1,7 @@
 import User from "../models/users.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import gravatar from "gravatar";
 
 const registerUser = async (information) => {
     try {
@@ -11,13 +12,13 @@ const registerUser = async (information) => {
             return null;
         }
 
-        const passwordHash = await bcrypt.hash(password, 10);
-
-        const newUser = await User.create({
-            email,
-            password: passwordHash,
-            subscription,
-        });
+    const passwordHash = await bcrypt.hash(password, 10);
+      const newUser = await User.create({
+        email,
+        password: passwordHash,
+        subscription,
+        avatarURL: gravatar.url(email),
+    });
         return newUser;
     } catch (error) {
         throw new Error('Error registering user');
@@ -94,6 +95,17 @@ const updateUserAvatar = async (userId, avatarURL) => {
   }
 };
 
+const getUserAvatar = async (id) => {
+  try {
+    const user = await User.findById(id);
+    
+     return user.avatarURL;
+  } catch (error) {
+    throw new Error('Error getUser avatar');
+  }
+
+}
+
 export default {
   registerUser,
   loginUser,
@@ -101,4 +113,5 @@ export default {
   currentUser,
   updateSubscriptionUser,
   updateUserAvatar,
+  getUserAvatar,
 };

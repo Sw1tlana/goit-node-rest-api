@@ -24,7 +24,11 @@ router.patch(
   validateBody(updateSubscriptionSchema),
   UserController.updateSubscription
 );
-
-router.patch("/avatars", authMiddleware, uploadMiddleware.single("avatar"), UserController.changeAvatar);
+router.get("/avatars", authMiddleware, UserController.avatar);
+router.patch(
+  "/avatars",
+  authMiddleware,
+  uploadMiddleware.single("avatar"),
+  UserController.changeAvatar);
 
 export default router;
