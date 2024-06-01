@@ -81,10 +81,24 @@ const updateSubscriptionUser = async (id, subscription) => {
   }
 };
 
+const updateUserAvatar = async (userId, avatarURL) => {
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { avatarURL },
+      { new: true }
+    );
+    return updatedUser;
+  } catch (error) {
+    throw new Error('Error updating avatar');
+  }
+};
+
 export default {
   registerUser,
   loginUser,
   logoutUser,
   currentUser,
   updateSubscriptionUser,
+  updateUserAvatar,
 };

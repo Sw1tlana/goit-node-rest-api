@@ -4,6 +4,7 @@ import validateBody from "../helpers/validateBody.js";
 import { createUserSchema, loginUserSchema, updateSubscriptionSchema } from "../schemas/usersSchemas.js";
 
 import authMiddleware from "../middlewares/auth.js";
+import uploadMiddleware from "../middlewares/upload.js";
 
 const router = express.Router();
 
@@ -23,5 +24,7 @@ router.patch(
   validateBody(updateSubscriptionSchema),
   UserController.updateSubscription
 );
+
+router.patch("/avatars", authMiddleware, uploadMiddleware.single("avatar"), UserController.changeAvatar);
 
 export default router;

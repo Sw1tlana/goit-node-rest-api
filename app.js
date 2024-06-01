@@ -1,3 +1,4 @@
+import path from "node:path";
 import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
@@ -9,6 +10,8 @@ import userRouter from "./routes/usersRouter.js";
 import "./db.js";
 
 const app = express();
+
+app.use("/avatars", express.static(path.resolve("public/avatars")));
 
 app.use(morgan("tiny"));
 app.use(cors());
@@ -29,3 +32,5 @@ app.use((err, req, res, next) => {
 app.listen(3000, () => {
   console.log("Server is running. Use our API on port: 3000");
 });
+
+export default app;

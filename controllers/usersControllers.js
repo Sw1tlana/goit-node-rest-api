@@ -1,4 +1,8 @@
+import path from "node:path";
 import usersService from "../services/usersServices.js";
+import * as fs from "node:fs/promises";
+import User from "../models/users.js";
+import Jimp from "jimp";
 
 export const register = async(req, res, next) => {
     try {
@@ -45,10 +49,10 @@ export const login = async (req, res, next) => {
 };
 
 export const logout = async (req, res, next) => {
-   try {
-    await usersService.logoutUser(req.user.id);
+  try {
+      await usersService.logoutUser(req.user.id);
 
-    return res.status(204).end();
+      return res.status(204).end();
   } catch (error) {
     next(error);
   }
@@ -79,4 +83,41 @@ export const updateSubscription = async (req, res, next) => {
   }
 };
 
-export default { register, login, logout, current, updateSubscription };
+export const changeAvatar = async (req, res, next) => {
+  try {
+    const inputPath = req.file.path;
+    const outputPath = path.resolve('public', 'avatars', req.file.filename);
+
+    await Jimp.read(inputPath)
+      .then(image => {
+        return image
+          .resize(250, 250) 
+          .writeAsync(outputPath); 
+      });
+
+    await fs.unlink(inputPath);
+
+    const user = await User.findByIdAndUpdate(
+      req.user.id,
+      { avatarURL: req.file.filename },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(401).send({ message: 'Not authorized' });
+    }
+
+    return res.status(200).send(user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export default {
+  register,
+  login,
+  logout,
+  current,
+  updateSubscription,
+  changeAvatar
+};
