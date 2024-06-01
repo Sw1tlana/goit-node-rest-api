@@ -1,7 +1,6 @@
 import path from "node:path";
 import usersService from "../services/usersServices.js";
 import * as fs from "node:fs/promises";
-import User from "../models/users.js";
 import Jimp from "jimp";
 
 export const register = async(req, res, next) => {
@@ -83,31 +82,54 @@ export const updateSubscription = async (req, res, next) => {
   }
 };
 
-export const changeAvatar = async (req, res, next) => {
+export const avatar = async (req, res, next) => {
+
+  const id = req.user.id;
   try {
-    const inputPath = req.file.path;
-    const outputPath = path.resolve('public', 'avatars', req.file.filename);
+    const userAvatarFilePath = await usersService.getUserAvatar(id);
 
-    await Jimp.read(inputPath)
-      .then(image => {
-        return image
-          .resize(250, 250) 
-          .writeAsync(outputPath); 
-      });
+    const isStatic = await fs
+      .access(userAvatarFilePath)
+      .then(() => true)
+      .catch(() => false);
 
-    await fs.unlink(inputPath);
+    if (isStatic) {
+      return res
+        .status(200)
+        .send({ avatarURL: "/avatars/" + userAvatarFilePath });
+    } else {
+      return res.status(200).send({ avatarURL: userAvatarFilePath });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
 
-    const user = await User.findByIdAndUpdate(
-      req.user.id,
-      { avatarURL: req.file.filename },
-      { new: true }
+export const changeAvatar = async (req, res, next) => {
+
+  try {
+      const id = req.user.id;
+
+    await fs.rename(
+      req.file.path,
+      path.resolve("public", "avatars", req.file.filename)
     );
 
-    if (!user) {
-      return res.status(401).send({ message: 'Not authorized' });
-    }
-
-    return res.status(200).send(user);
+    Jimp.read(
+      path.resolve("public", "avatars", req.file.filename),
+      (err, avatar) => {
+        if (err) throw err;
+        avatar
+          .resize(256, 256)
+          .write(path.resolve("public", "avatars", req.file.filename));
+            console.log("Image resized successfully");
+      }
+    );
+    const avatarURL = await usersService.updateUserAvatar(
+      id,
+      req.file.filename
+    );
+    return res.status(200).send({ avatarURL: avatarURL.avatarURL });
   } catch (error) {
     next(error);
   }
@@ -119,5 +141,6 @@ export default {
   logout,
   current,
   updateSubscription,
-  changeAvatar
+  avatar,
+  changeAvatar,
 };
