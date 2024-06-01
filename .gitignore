@@ -1,7 +1,9 @@
 #tmp
 tmp/*
 !tmp/.gitkeep
-public/avatars*
+
+#public
+public/avatars/*
 !public/avatars/.gitkeep
 
 # Logs
