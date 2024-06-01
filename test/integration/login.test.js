@@ -20,16 +20,26 @@ describe("Login", () => {
         await mongoose.disconnect();
     });
 
-    test("should login new user", async () => {
+    test("Login succesful", async () => {
         const response = await supertest(app)
             .post("/users/login")
             .send({
                password: "2353465",
-                email: "swer.in@gmail.com"
+               email: "swer.in@gmail.com"
             });
 
         expect(response.statusCode).toBe(200);
         expect(response.body.token).toBeDefined();
         expect(response.body.user.email).toBe("swer.in@gmail.com");
+    });
+
+    test("Login unsuccessful", async () => {
+        const response = await supertest(app)
+            .post("/users/login")
+            .send({
+                password: "123534657",
+                email: "swer.in@gmail.com"
+            });
+        expect(response.statusCode).toBe(401);
     });
 });

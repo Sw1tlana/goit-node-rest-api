@@ -85,41 +85,33 @@ export const updateSubscription = async (req, res, next) => {
 
 export const changeAvatar = async (req, res, next) => {
   try {
-   const inputPath = req.file.path;
-    const outputPath = path.resolve("public", "avatars", req.file.filename);
+    const inputPath = req.file.path;
+    const outputPath = path.resolve('public', 'avatars', req.file.filename);
 
-       const image = await Jimp.read(inputPath);
-
-    // Перевірка початкових розмірів зображення
-    const originalWidth = image.bitmap.width;
-    const originalHeight = image.bitmap.height;
-
-    await image
-      .resize(250, 250) // Зміна розміру до 250x250
-      .writeAsync(outputPath); // Збереження обробленого зображення
-
-    // Перевірка нових розмірів зображення
-    const resizedImage = await Jimp.read(outputPath);
-    const resizedWidth = resizedImage.bitmap.width;
-    const resizedHeight = resizedImage.bitmap.height;
+    await Jimp.read(inputPath)
+      .then(image => {
+        return image
+          .resize(250, 250) 
+          .writeAsync(outputPath); 
+      });
 
     await fs.unlink(inputPath);
-   
+
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { avatarURL: req.file.filename },
-      { new: true });
-    
-    if (user === null) {
-      return res.status(401).send({ message: "Not authorized" });
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(401).send({ message: 'Not authorized' });
     }
-    
+
     return res.status(200).send(user);
   } catch (error) {
-    next(error)
-    
+    next(error);
   }
-}
+};
 
 export default {
   register,
