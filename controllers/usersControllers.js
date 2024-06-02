@@ -108,28 +108,29 @@ export const avatar = async (req, res, next) => {
 export const changeAvatar = async (req, res, next) => {
 
   try {
-      const id = req.user.id;
+    const id = req.user.id;
+    const avatarFilename = req.file.filename;
 
     await fs.rename(
       req.file.path,
-      path.resolve("public", "avatars", req.file.filename)
+      path.resolve("public", "avatars", avatarFilename)
     );
 
     Jimp.read(
-      path.resolve("public", "avatars", req.file.filename),
+      path.resolve("public", "avatars", avatarFilename),
       (err, avatar) => {
         if (err) throw err;
         avatar
           .resize(256, 256)
-          .write(path.resolve("public", "avatars", req.file.filename));
+          .write(path.resolve("public", "avatars", avatarFilename));
             console.log("Image resized successfully");
       }
     );
     const avatarURL = await usersService.updateUserAvatar(
       id,
-      req.file.filename
+     avatarFilename
     );
-    return res.status(200).send({ avatarURL: avatarURL.avatarURL });
+    return res.status(200).send({ avatarURL: "/avatars/" + avatarFilename });
   } catch (error) {
     next(error);
   }
