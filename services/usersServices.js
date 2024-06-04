@@ -2,39 +2,44 @@ import User from "../models/users.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
-// import mail from "../mail.js";
-// import crypto from "node:crypto";
+import sendMail from "../mail.js";
 
 const registerUser = async (information) => {
     try {
-        const { password, email, subscription } = information;
+        const { password, email, subscription, verificationToken } = information;
       
-        const user = await User.findOne({ email });
-        if (user !== null) {
+      console.log('Checking if user exists:', email);
+      
+      const user = await User.findOne({ email });
+      
+      if (user !== null) {
+             console.log('User already exists:', email);
             return null;
         }
 
+        console.log('Hashing password for user:', email);
       const passwordHash = await bcrypt.hash(password, 10);
-
-      // const verificationToken = crypto.randomUUID()
       
-    // await mail.sendMail({
-    //     to: ["svitlana.lightbeam@gmail.com"],
-    //     from: "felix@gmail.com",
-    //     subject: 'Hello!!!',
-    //     html: `<h1 style="color: red;">Click on <a href="http://localhost:3000/users/verify/${verificationToken} target="_blank">Link</a></h1>`,
-    //     text: `Click on link http://localhost:3000/users/verify/${verificationToken}`
-    //   });   
+    await sendMail({
+        to: email,
+        from: "noreply@yourdomain.com",
+        subject: 'Hello!!!',
+        html: `Click on <a href="http://localhost:3000/users/verify/${verificationToken}">Link</a>`,
+        text: `Click on link http://localhost:3000/users/verify/${verificationToken}`
+    });   
+      
+         console.log('Creating new user in the database:', email);
         
       const newUser = await User.create({
         email,
         password: passwordHash,
+        verificationToken,
         subscription,
         avatarURL: gravatar.url(email),
-        // verificationToken,
     });
         return newUser;
     } catch (error) {
+       console.error('Error in registerUser service:', error);
         throw new Error('Error registering user');
     }
     
@@ -52,7 +57,11 @@ const loginUser = async (email, password) => {
       
         if (isMatch === false) {
             return null;
-        }
+      }
+      
+      if (user.verify === false) {
+        return null;
+      }
 
         const token = jwt.sign(
             { id: user._id, email: user.email, subscription: user.subscription },
@@ -66,6 +75,7 @@ const loginUser = async (email, password) => {
 
         return { token, user };
     } catch (error) {
+         console.error('Error in loginUser function:', error);
         throw new Error('Error logging in user');
     }
 }
