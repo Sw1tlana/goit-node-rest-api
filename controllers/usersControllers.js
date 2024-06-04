@@ -2,25 +2,40 @@ import path from "node:path";
 import usersService from "../services/usersServices.js";
 import * as fs from "node:fs/promises";
 import Jimp from "jimp";
+import mail from "../mail.js";
+import crypto from "node:crypto";
 
 export const register = async(req, res, next) => {
     try {
       const { password, email, subscription = "starter" } = req.body;
+      const verificationToken = crypto.randomUUID();
+      
         const result = await usersService.registerUser({ 
             password,
             email,
             subscription,
+            verificationToken 
         });
 
       if (result === null) {
             return res.status(409).send({ message: "Email in use" });
-        }
+      }
+      
+      await mail.sendMail({
+            to: ["svitlana.lightbeam@gmail.com"],
+            from: "felix@gmail.com",
+            subject: 'Hello!!!',
+            html: `<h1 style="color: red;">Click on <a href="http://localhost:3000/users/verify/${verificationToken} target="_blank">Link</a></h1>`,
+            text: `Click on link http://localhost:3000/users/verify/${verificationToken}`
+      }); 
+      
            return res.status(201).send({
             user: {
             email: result.email,
             subscription: result.subscription,
-      },
-    });
+             },
+           });  
+      
     } catch(error) {
         next(error);
     }

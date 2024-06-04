@@ -2,6 +2,8 @@ import User from "../models/users.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
+// import mail from "../mail.js";
+// import crypto from "node:crypto";
 
 const registerUser = async (information) => {
     try {
@@ -12,12 +14,24 @@ const registerUser = async (information) => {
             return null;
         }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+      const passwordHash = await bcrypt.hash(password, 10);
+
+      // const verificationToken = crypto.randomUUID()
+      
+    // await mail.sendMail({
+    //     to: ["svitlana.lightbeam@gmail.com"],
+    //     from: "felix@gmail.com",
+    //     subject: 'Hello!!!',
+    //     html: `<h1 style="color: red;">Click on <a href="http://localhost:3000/users/verify/${verificationToken} target="_blank">Link</a></h1>`,
+    //     text: `Click on link http://localhost:3000/users/verify/${verificationToken}`
+    //   });   
+        
       const newUser = await User.create({
         email,
         password: passwordHash,
         subscription,
         avatarURL: gravatar.url(email),
+        // verificationToken,
     });
         return newUser;
     } catch (error) {
@@ -44,7 +58,7 @@ const loginUser = async (email, password) => {
             { id: user._id, email: user.email, subscription: user.subscription },
             process.env.JWT_SECRET,
             {
-                expiresIn: "1h",
+                expiresIn: "2h",
             }
       );
       
