@@ -31,7 +31,7 @@ router.patch(
   uploadMiddleware.single("avatar"),
   UserController.changeAvatar);
 
-router.get("/users/verify/:verificationToken",
+router.get("/auth/verify/:verificationToken",
   authMiddleware,
   UserController.verifyEmail);
 

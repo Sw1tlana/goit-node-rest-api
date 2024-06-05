@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
 import sendMail from "../mail.js";
+import { verifyEmail } from "../controllers/usersControllers.js";
 
 const registerUser = async (information) => {
     try {
@@ -24,8 +25,8 @@ const registerUser = async (information) => {
         to: email,
         from: "noreply@yourdomain.com",
         subject: 'Hello!!!',
-        html: `Click on <a href="http://localhost:3000/users/verify/${verificationToken}">Link</a>`,
-        text: `Click on link http://localhost:3000/users/verify/${verificationToken}`
+        html: `Click on <a href="http://localhost:3000/auth/verify/:verificationToken/${verificationToken}">Link</a>`,
+        text: `Click on link http://localhost:3000/auth/verify/:verificationToken${verificationToken}`
     });   
       
          console.log('Creating new user in the database:', email);
@@ -123,11 +124,23 @@ const getUserAvatar = async (id) => {
   try {
     const user = await User.findById(id);
     
-     return user.avatarURL;
+    return user.avatarURL;
   } catch (error) {
     throw new Error('Error getUser avatar');
   }
 
+};
+
+export const verifyUser = async (verificationToken) => {
+
+  const user = await User.findOne({ verificationToken: token });
+  
+   if (!user) {
+    return null;
+  }
+  
+  await User.findByIdAndUpdate(user_id, { verify: true, verificationToken: null });
+  return user;
 }
 
 export default {
@@ -138,4 +151,5 @@ export default {
   updateSubscriptionUser,
   updateUserAvatar,
   getUserAvatar,
+  verifyUser,
 };

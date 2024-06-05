@@ -148,7 +148,19 @@ export const changeAvatar = async (req, res, next) => {
 };
 
 export const verifyEmail = async (req, res, next) => {
-res.send("Verify")
+  try {
+    const { verificationToken } = req.params;
+    const user = await usersService.verifyUser(verificationToken);
+
+    if (verify === null) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+
+    return res.status(200).send({ message: 'Verification successful' });
+    
+  } catch(error) {
+    next(error);
+}
 }
 
 export default {
