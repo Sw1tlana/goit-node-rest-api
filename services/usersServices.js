@@ -25,8 +25,8 @@ const registerUser = async (information) => {
         to: email,
         from: "noreply@yourdomain.com",
         subject: 'Hello!!!',
-        html: `Click on <a href="http://localhost:3000/auth/verify/:verificationToken/${verificationToken}">Link</a>`,
-        text: `Click on link http://localhost:3000/auth/verify/:verificationToken${verificationToken}`
+        html: `Click on <a href="http://localhost:3000/auth/verify/${verificationToken}">Link</a>`,
+        text: `Click on link http://localhost:3000/auth/verify/${verificationToken}`
     });   
       
          console.log('Creating new user in the database:', email);
@@ -133,14 +133,18 @@ const getUserAvatar = async (id) => {
 
 export const verifyUser = async (verificationToken) => {
 
-  const user = await User.findOne({ verificationToken: token });
+  try {
+    const user = await User.findOne({ verificationToken });
+
+    if (user === null) {
+      return null;
+    }
   
-   if (!user) {
-    return null;
+    await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: null });
+    return user;
+  } catch (error) {
+    throw new Error('Error verifying user');
   }
-  
-  await User.findByIdAndUpdate(user_id, { verify: true, verificationToken: null });
-  return user;
 }
 
 export default {

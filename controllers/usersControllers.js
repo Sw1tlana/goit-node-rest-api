@@ -72,7 +72,7 @@ export const current = async (req, res, next) => {
   try {
     const authorizationHeader = req.headers.authorization;
 
-    const result = usersService.currentUser(authorizationHeader);
+    const result = await usersService.currentUser(authorizationHeader);
 
     return res.status(200).send(result);
   } catch (error) {
@@ -150,15 +150,15 @@ export const changeAvatar = async (req, res, next) => {
 export const verifyEmail = async (req, res, next) => {
   try {
     const { verificationToken } = req.params;
+
     const user = await usersService.verifyUser(verificationToken);
 
-    if (verify === null) {
+    if (user === null) {
       return res.status(404).send({ message: 'User not found' });
     }
-
     return res.status(200).send({ message: 'Verification successful' });
     
-  } catch(error) {
+  } catch (error) {
     next(error);
 }
 }

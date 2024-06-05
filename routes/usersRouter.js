@@ -31,8 +31,7 @@ router.patch(
   uploadMiddleware.single("avatar"),
   UserController.changeAvatar);
 
-router.get("/auth/verify/:verificationToken",
-  authMiddleware,
+router.get("/verify/:verificationToken",
   UserController.verifyEmail);
 
 export default router;
