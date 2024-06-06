@@ -11,9 +11,9 @@ var transport = nodemailer.createTransport({
 });
 
 const sendMail = (message) => {
-  return transport.sendMail(message );
+  return transport.sendMail(message);
 }
 
-export default sendMail;
+export default { sendMail };
 
 

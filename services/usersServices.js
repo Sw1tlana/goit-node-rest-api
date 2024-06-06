@@ -2,34 +2,31 @@ import User from "../models/users.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import gravatar from "gravatar";
-import sendMail from "../mail.js";
-import { verifyEmail } from "../controllers/usersControllers.js";
+import mail from "../mail.js";
+import crypto from "node:crypto";
 
 const registerUser = async (information) => {
     try {
-        const { password, email, subscription, verificationToken } = information;
+        const { password, email, subscription } = information;
       
-      console.log('Checking if user exists:', email);
       
       const user = await User.findOne({ email });
       
       if (user !== null) {
-             console.log('User already exists:', email);
             return null;
         }
 
-        console.log('Hashing password for user:', email);
       const passwordHash = await bcrypt.hash(password, 10);
+
+      const verificationToken = crypto.randomUUID();
       
-    await sendMail({
+    mail.sendMail({
         to: email,
         from: "noreply@yourdomain.com",
         subject: 'Hello!!!',
-        html: `Click on <a href="http://localhost:3000/auth/verify/${verificationToken}">Link</a>`,
-        text: `Click on link http://localhost:3000/auth/verify/${verificationToken}`
+        html: `Click on <a href="http://localhost:3000/users/verify/${verificationToken}">Link</a>`,
+        text: `Click on link http://localhost:3000/users/verify/${verificationToken}`
     });   
-      
-         console.log('Creating new user in the database:', email);
         
       const newUser = await User.create({
         email,
@@ -40,7 +37,6 @@ const registerUser = async (information) => {
     });
         return newUser;
     } catch (error) {
-       console.error('Error in registerUser service:', error);
         throw new Error('Error registering user');
     }
     
@@ -60,8 +56,8 @@ const loginUser = async (email, password) => {
             return null;
       }
       
-      if (user.verify === false) {
-        return null;
+      if (!user.verify) {
+        return false;
       }
 
         const token = jwt.sign(
@@ -76,7 +72,6 @@ const loginUser = async (email, password) => {
 
         return { token, user };
     } catch (error) {
-         console.error('Error in loginUser function:', error);
         throw new Error('Error logging in user');
     }
 }
@@ -140,7 +135,8 @@ export const verifyUser = async (verificationToken) => {
       return null;
     }
   
-    await User.findByIdAndUpdate(user._id, { verify: true, verificationToken: null });
+    await User.findByIdAndUpdate(user._id,
+      { verify: true, verificationToken: null });
     return user;
   } catch (error) {
     throw new Error('Error verifying user');

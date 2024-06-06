@@ -2,19 +2,15 @@ import path from "node:path";
 import usersService from "../services/usersServices.js";
 import * as fs from "node:fs/promises";
 import Jimp from "jimp";
-import crypto from "node:crypto";
 
 export const register = async(req, res, next) => {
     try {
       const { password, email, subscription = "starter" } = req.body;
-
-          const verificationToken = crypto.randomUUID();
       
         const result = await usersService.registerUser({ 
             password,
             email,
             subscription,
-            verificationToken,
         });
 
       if (result === null) {
@@ -42,9 +38,10 @@ export const login = async (req, res, next) => {
             return res.status(401).send({ message: "Email or password is wrong" });
         }
 
-      if (result.verify === null) {
+      if (result === false) {
         return res.status(401).send({ message: "Please verify your email" });
       }
+      
         return res.status(200).send({
             token: result.token,
             user: {
