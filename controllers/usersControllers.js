@@ -3,31 +3,31 @@ import usersService from "../services/usersServices.js";
 import * as fs from "node:fs/promises";
 import Jimp from "jimp";
 
-export const register = async(req, res, next) => {
-    try {
-      const { password, email, subscription = "starter" } = req.body;
+export const register = async (req, res, next) => {
+  try {
+    const { password, email, subscription = "starter" } = req.body;
       
-        const result = await usersService.registerUser({ 
-            password,
-            email,
-            subscription,
-        });
+    const result = await usersService.registerUser({
+      password,
+      email,
+      subscription,
+    });
 
-      if (result === null) {
-            return res.status(409).send({ message: "Email in use" });
-      }
- 
-           return res.status(201).send({
-            user: {
-            email: result.email,
-            subscription: result.subscription,
-             },
-           });  
-      
-    } catch(error) {
-        next(error);
+    if (result === null) {
+      return res.status(409).send({ message: "Email in use" });
     }
-}
+ 
+    return res.status(201).send({
+      user: {
+        email: result.email,
+        subscription: result.subscription,
+      },
+    });
+      
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const login = async (req, res, next) => {
     try {
@@ -157,8 +157,31 @@ export const verifyEmail = async (req, res, next) => {
     
   } catch (error) {
     next(error);
-}
-}
+  }
+};
+
+export const resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+      if (!email) {
+      return res.status(400).json({ message: "missing required field email" });
+    }
+
+    const result = await usersService.resendVerificationEmail(email);
+    
+    if (result === true) {
+      res.status(400).send({ message: "Verification has already been passed" });
+    }
+    if (result === null) {
+      res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send({ message: "Verification email sent" })
+  } catch (error) {
+    next(error)
+  }
+};
 
 export default {
   register,
@@ -169,4 +192,5 @@ export default {
   avatar,
   changeAvatar,
   verifyEmail,
+  resendVerificationEmail,
 };

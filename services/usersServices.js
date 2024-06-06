@@ -6,75 +6,75 @@ import mail from "../mail.js";
 import crypto from "node:crypto";
 
 const registerUser = async (information) => {
-    try {
-        const { password, email, subscription } = information;
+  try {
+    const { password, email, subscription } = information;
       
       
-      const user = await User.findOne({ email });
+    const user = await User.findOne({ email });
       
-      if (user !== null) {
-            return null;
-        }
+    if (user !== null) {
+      return null;
+    }
 
-      const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
-      const verificationToken = crypto.randomUUID();
+    const verificationToken = crypto.randomUUID();
       
     mail.sendMail({
-        to: email,
-        from: "noreply@yourdomain.com",
-        subject: 'Hello!!!',
-        html: `Click on <a href="http://localhost:3000/users/verify/${verificationToken}">Link</a>`,
-        text: `Click on link http://localhost:3000/users/verify/${verificationToken}`
-    });   
-        
-      const newUser = await User.create({
-        email,
-        password: passwordHash,
-        verificationToken,
-        subscription,
-        avatarURL: gravatar.url(email),
+      to: email,
+      from: "noreply@yourdomain.com",
+      subject: 'Verify email!',
+      html: `Click verify email <a href="http://localhost:3000/users/verify/${verificationToken}">Link</a>`,
+      text: `Click verify email http://localhost:3000/users/verify/${verificationToken}`
     });
-        return newUser;
-    } catch (error) {
-        throw new Error('Error registering user');
-    }
+        
+    const newUser = await User.create({
+      email,
+      password: passwordHash,
+      verificationToken,
+      subscription,
+      avatarURL: gravatar.url(email),
+    });
+    return newUser;
+  } catch (error) {
+    throw new Error('Error registering user');
+  }
     
-}
+};
 
 const loginUser = async (email, password) => {
-    try {
-      const user = await User.findOne({ email });
+  try {
+    const user = await User.findOne({ email });
 
-        if (user === null) {
-            return null;
-        }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      
-        if (isMatch === false) {
-            return null;
-      }
-      
-      if (!user.verify) {
-        return false;
-      }
-
-        const token = jwt.sign(
-            { id: user._id, email: user.email, subscription: user.subscription },
-            process.env.JWT_SECRET,
-            {
-                expiresIn: "2h",
-            }
-      );
-      
-        await User.findByIdAndUpdate(user._id, { token });
-
-        return { token, user };
-    } catch (error) {
-        throw new Error('Error logging in user');
+    if (user === null) {
+      return null;
     }
-}
+
+    const isMatch = await bcrypt.compare(password, user.password);
+      
+    if (isMatch === false) {
+      return null;
+    }
+      
+    if (!user.verify) {
+      return false;
+    }
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email, subscription: user.subscription },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "2h",
+      }
+    );
+      
+    await User.findByIdAndUpdate(user._id, { token });
+
+    return { token, user };
+  } catch (error) {
+    throw new Error('Error logging in user');
+  }
+};
 
 const logoutUser = async (id) => {
     await User.findByIdAndUpdate(id, { token: null });  
@@ -141,6 +141,28 @@ export const verifyUser = async (verificationToken) => {
   } catch (error) {
     throw new Error('Error verifying user');
   }
+};
+
+export const resendVerificationEmail = async (email) => {
+  try {
+    const user = await User.findOne({ email });
+    if (user === null) {
+      return null;
+    }
+    if (user.verify === true) {
+      return true;
+    }
+      mail.sendMail({
+      to: email,
+      from: "noreply@yourdomain.com",
+      subject: 'Verify email!',
+      html: `Click verify email <a href="http://localhost:3000/users/verify/${user.verificationToken}">Link</a>`,
+      text: `Click verify email http://localhost:3000/users/verify/${user.verificationToken}`
+    });
+        
+  } catch (error) {
+    throw error;
+}
 }
 
 export default {
@@ -152,4 +174,5 @@ export default {
   updateUserAvatar,
   getUserAvatar,
   verifyUser,
+  resendVerificationEmail,
 };
