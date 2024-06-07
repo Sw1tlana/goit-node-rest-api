@@ -3,28 +3,31 @@ import usersService from "../services/usersServices.js";
 import * as fs from "node:fs/promises";
 import Jimp from "jimp";
 
-export const register = async(req, res, next) => {
-    try {
-      const { password, email, subscription = "starter" } = req.body;
-        const result = await usersService.registerUser({ 
-            password,
-            email,
-            subscription,
-        });
+export const register = async (req, res, next) => {
+  try {
+    const { password, email, subscription = "starter" } = req.body;
+      
+    const result = await usersService.registerUser({
+      password,
+      email,
+      subscription,
+    });
 
-      if (result === null) {
-            return res.status(409).send({ message: "Email in use" });
-        }
-           return res.status(201).send({
-            user: {
-            email: result.email,
-            subscription: result.subscription,
+    if (result === null) {
+      return res.status(409).send({ message: "Email in use" });
+    }
+ 
+    return res.status(201).send({
+      user: {
+        email: result.email,
+        subscription: result.subscription,
       },
     });
-    } catch(error) {
-        next(error);
-    }
-}
+      
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const login = async (req, res, next) => {
     try {
@@ -35,6 +38,10 @@ export const login = async (req, res, next) => {
             return res.status(401).send({ message: "Email or password is wrong" });
         }
 
+      if (result === false) {
+        return res.status(401).send({ message: "Please verify your email" });
+      }
+      
         return res.status(200).send({
             token: result.token,
             user: {
@@ -43,6 +50,7 @@ export const login = async (req, res, next) => {
             },
         });
     } catch (error) {
+        console.error('Error in login function:', error)
         next(error);
     }
 };
@@ -61,7 +69,7 @@ export const current = async (req, res, next) => {
   try {
     const authorizationHeader = req.headers.authorization;
 
-    const result = usersService.currentUser(authorizationHeader);
+    const result = await usersService.currentUser(authorizationHeader);
 
     return res.status(200).send(result);
   } catch (error) {
@@ -136,6 +144,41 @@ export const changeAvatar = async (req, res, next) => {
   }
 };
 
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const { verificationToken } = req.params;
+
+    const user = await usersService.verifyUser(verificationToken);
+
+    if (user === null) {
+      return res.status(404).send({ message: 'User not found' });
+    }
+    return res.status(200).send({ message: 'Verification successful' });
+    
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendVerificationEmail = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const result = await usersService.resendVerificationEmail(email);
+    
+    if (result == true) {
+      res.status(400).send({ message: "Verification has already been passed" });
+    }
+    if (result == null) {
+      res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send({ message: "Verification email sent" })
+  } catch (error) {
+    next(error)
+  }
+};
+
 export default {
   register,
   login,
@@ -144,4 +187,6 @@ export default {
   updateSubscription,
   avatar,
   changeAvatar,
+  verifyEmail,
+  resendVerificationEmail,
 };
