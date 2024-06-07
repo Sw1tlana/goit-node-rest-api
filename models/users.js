@@ -31,6 +31,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Verify token is required'],
   }
-}, {versionKey: false, timestamps: true});
+});
 
 export default mongoose.model("User", userSchema);

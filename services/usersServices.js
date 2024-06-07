@@ -150,7 +150,7 @@ export const verifyUser = async (verificationToken) => {
 export const resendVerificationEmail = async (email) => {
   try {
     const user = await User.findOne({ email });
-    if (user === null) {
+    if (user == null) {
       return null;
     }
     if (user.verify === true) {

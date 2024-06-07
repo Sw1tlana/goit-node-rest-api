@@ -166,10 +166,10 @@ export const resendVerificationEmail = async (req, res, next) => {
 
     const result = await usersService.resendVerificationEmail(email);
     
-    if (result === true) {
+    if (result == true) {
       res.status(400).send({ message: "Verification has already been passed" });
     }
-    if (result === null) {
+    if (result == null) {
       res.status(404).send({ message: "User not found" });
     }
 
