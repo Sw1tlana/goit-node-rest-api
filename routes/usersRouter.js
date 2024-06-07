@@ -33,7 +33,7 @@ router.patch(
 
 router.get("/verify/:verificationToken",
   UserController.verifyEmail);
-router.post("/verify",
+router.post("/verify/",
   authMiddleware,
   validateBody(verificationEmailSchema),
   UserController.resendVerificationEmail);

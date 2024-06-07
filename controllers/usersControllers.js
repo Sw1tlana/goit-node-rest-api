@@ -164,10 +164,6 @@ export const resendVerificationEmail = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-      if (!email) {
-      return res.status(400).json({ message: "missing required field email" });
-    }
-
     const result = await usersService.resendVerificationEmail(email);
     
     if (result === true) {

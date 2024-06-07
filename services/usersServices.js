@@ -20,7 +20,7 @@ const registerUser = async (information) => {
 
     const verificationToken = crypto.randomUUID();
       
-    mail.sendMail({
+  mail.sendMail({
       to: email,
       from: "noreply@yourdomain.com",
       subject: 'Verify email!',
@@ -31,9 +31,9 @@ const registerUser = async (information) => {
     const newUser = await User.create({
       email,
       password: passwordHash,
-      verificationToken,
       subscription,
       avatarURL: gravatar.url(email),
+      verificationToken,
     });
     return newUser;
   } catch (error) {
@@ -136,7 +136,11 @@ export const verifyUser = async (verificationToken) => {
     }
   
     await User.findByIdAndUpdate(user._id,
-      { verify: true, verificationToken: null });
+      {
+        verify: true,
+        verificationToken: null
+      });
+    
     return user;
   } catch (error) {
     throw new Error('Error verifying user');
@@ -158,8 +162,9 @@ export const resendVerificationEmail = async (email) => {
       subject: 'Verify email!',
       html: `Click verify email <a href="http://localhost:3000/users/verify/${user.verificationToken}">Link</a>`,
       text: `Click verify email http://localhost:3000/users/verify/${user.verificationToken}`
-    });
-        
+      });
+    
+     return user;   
   } catch (error) {
     throw error;
 }
